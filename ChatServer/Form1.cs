@@ -13,6 +13,7 @@ namespace ChatServer
         private TcpClient client;
         private OptionLoader loader;
         private bool isActive = false;
+        private bool isExistsClient = false;
         public Form1()
         {
             InitializeComponent();
@@ -20,6 +21,12 @@ namespace ChatServer
             ButtonInitEnabled();
             this.loader = new OptionLoader();
             this.listner = new TcpListener(IPAddress.Any, Int32.Parse(this.loader["localport"]));
+        }
+
+        private void AllFlagReset()
+        {
+            this.isActive = false;
+            this.isExistsClient = false;
         }
 
         private void ButtonInitEnabled()
@@ -44,18 +51,31 @@ namespace ChatServer
                 {
                     this.client = this.listner.AcceptTcpClient();
                     UpdateStatusLabel("接続中");
-                    //this.isExistsClient = true;
+                    this.isExistsClient = true;
                     RecvAction();
                 }
                 SysWait();
             }
         }
 
+        private void Information(TcpClient client)
+        {
+            NetworkStream stream = client.GetStream();
+            byte[] buffer = System.Text.Encoding.UTF8.GetBytes("welcome easy chat server..." + "\r\n");
+            stream.Write(buffer, 0, buffer.Length);
+            stream.Flush();
+        }
+
         private void RecvAction()
         {
-            //while (this.isExistsClient)
-            //{
-            //}
+            Information(this.client);
+
+            while (this.isExistsClient)
+            {
+                
+
+                SysWait();
+            }
 
         }
 
@@ -77,23 +97,27 @@ namespace ChatServer
             button1.Enabled = !button1.Enabled;
             button2.Enabled = !button2.Enabled;
         }
-        private void ActiveStatusChange()
+
+        private void ListnerStop()
         {
-            this.isActive = !this.isActive;
             if (this.listner != null)
+            {
                 this.listner.Stop();
+            }
 
         }
 
         private void Form1_FormClosed(object sender, FormClosedEventArgs e)
         {
-            ActiveStatusChange();
+            AllFlagReset();
+            ListnerStop();
         }
 
         private void button2_Click(object sender, EventArgs e)
         {
             ChangeButtonEnabler();
-            ActiveStatusChange();
+            AllFlagReset();
+            ListnerStop();
             UpdateStatusLabel("未実行");
         }
     }
